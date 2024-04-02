@@ -8,7 +8,7 @@ import './App.css';
 function App() {
   const openai = new OpenAI({apiKey: `${process.env.REACT_APP_OPENAI_API_KEY}`, dangerouslyAllowBrowser: true});
   const [images, setImages] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [aiGenText, setAiGenText] = useState(null);
 
   const handleImageChange = (event) => {
     console.log("Handle image change triggered");
@@ -19,15 +19,15 @@ function App() {
       const file = fileList[i];
       const reader = new FileReader();
       reader.onload = (event) => {
-        imageList.push(event.target.result); // Pushing base64 data to the list
+        imageList.push(event.target.result);
         setImages([...imageList]);
       };
-      reader.readAsDataURL(file); // Reading file as base64
+      reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Prevent default form submission behavior
+    event.preventDefault();
 
     if (images.length === 0) {
       console.error('No images selected');
@@ -48,7 +48,7 @@ function App() {
         messages: images.map(image => ({
           role: "user",
           content: [
-            { type: "text", text: "Please generate a descriptive property listing based on the provided images. Describe the property's key features, amenities, and any notable characteristics that can be inferred from the images. Be sure to include details about the property's size, layout, architectural style, surroundings, and any unique selling points. Your description should be engaging and informative, aimed at attracting potential buyers or renters." },
+            { type: "text", text: "Imagine you're a real estate agent tasked with creating a compelling property listing based on the provided images. Your goal is to attract potential buyers or renters by highlighting the key features, amenities, and unique characteristics of the property. Describe the property's size, layout, architectural style, and surroundings based on what you see in the images. Emphasize any notable selling points that would make this property desirable. Your description should be engaging and informative, painting a vivid picture of the property to entice viewers." },
             {
               type: "image_url",
               image_url: {
@@ -59,8 +59,7 @@ function App() {
         }))
       });
 
-      console.log(response.choices[0]);
-      // Handle response as needed
+      setAiGenText(response.choices[0].message.content);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -80,14 +79,26 @@ function App() {
               </Form.Label>
               <Form.Control 
                 type="file" 
+                accept='*'
                 multiple 
                 onChange={(e) => {handleImageChange(e)}} 
               />
             </Form.Group>
-            <Button type="submit">Submit</Button>
+            <Button 
+            type="submit"
+            >
+              Submit
+            </Button>
           </Form>
         </Card.Body>
       </Card>
+      {aiGenText &&(
+        <Card id="returnedResponse">
+          <Card.Body>
+            {aiGenText}
+          </Card.Body>
+        </Card>
+      )}
     </div>
   );
 }
