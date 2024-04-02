@@ -3,13 +3,15 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { Card } from "react-bootstrap";
 import OpenAI from "openai";
+import LoadingPage from "./loading/LoadingPage";
 import './App.css';
+
 
 function App() {
   const openai = new OpenAI({apiKey: `${process.env.REACT_APP_OPENAI_API_KEY}`, dangerouslyAllowBrowser: true});
   const [images, setImages] = useState([]);
   const [aiGenText, setAiGenText] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   const handleImageChange = (event) => {
     console.log("Handle image change triggered");
     const fileList = event.target.files;
@@ -35,6 +37,7 @@ function App() {
     }
 
     try {
+      setLoading(true);
       await generatePropertyDescription(images);
     } catch (error) {
       console.error("Error:", error);
@@ -48,7 +51,7 @@ function App() {
         messages: images.map(image => ({
           role: "user",
           content: [
-            { type: "text", text: "Imagine you're a real estate agent tasked with creating a compelling property listing based on the provided images. Your goal is to attract potential buyers or renters by highlighting the key features, amenities, and unique characteristics of the property. Describe the property's size, layout, architectural style, and surroundings based on what you see in the images. Emphasize any notable selling points that would make this property desirable. Your description should be engaging and informative, painting a vivid picture of the property to entice viewers." },
+            { type: "text", text: "Imagine you're a real estate agent tasked with creating a compelling property listing based on the provided images. Your goal is to attract potential buyers or renters by highlighting the key features, amenities, and unique characteristics of the property. Describe the property's size, layout, architectural style, and surroundings based on what you see in the images. Emphasize any notable selling points that would make this property desirable. Your description should be engaging and informative, painting a vivid picture of the property to entice viewers. Keep your response concise, limiting it to 250 words or less." },
             {
               type: "image_url",
               image_url: {
@@ -60,17 +63,20 @@ function App() {
       });
 
       setAiGenText(response.choices[0].message.content);
+      setLoading(false)
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
   return (
+    <>
+    {loading && (
+      <LoadingPage />
+    )}
     <div className="main">
-      <div className="description">
-        <h1>Image2Listing</h1>
-      </div>
-      <Card>
+      <h1>Image2Listing</h1>
+      <Card id='inputForm'>
         <Card.Body>
           <Form onSubmit={handleSubmit}>
             <Form.Group controlId="formFileMultiple" className="mb-3">
@@ -79,10 +85,11 @@ function App() {
               </Form.Label>
               <Form.Control 
                 type="file" 
-                accept='*'
+                accept='image/*'
                 multiple 
                 onChange={(e) => {handleImageChange(e)}} 
               />
+              <Form.Text>This can support up to 10 images</Form.Text>
             </Form.Group>
             <Button 
             type="submit"
@@ -100,6 +107,7 @@ function App() {
         </Card>
       )}
     </div>
+    </>
   );
 }
 
