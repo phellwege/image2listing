@@ -10,3 +10,14 @@
     position: fixed;
     z-index: 9999;
 }
+.loadingPageWrapper div {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    width: 60%;
+    min-height: 60%;
+}
+#loadingGif {
+    width: 40%;
+}
